@@ -74,11 +74,11 @@ void initLoop(){
   }
 }
 
-#define NUM_GOLES 0
+#define NUM_GOLES 3
 
 int goleInd;
-char *goleText[NUM_GOLES] = {};
-// {"Walk dog","Cold shower","100 pushups 50 pullups"};
+char *goleText[NUM_GOLES] = //{};
+ {"Walk dog","Cold shower","100 pushups 50 pullups"};
 bool goleDone[NUM_GOLES];
 // TODO: goles can have custom done/notdone display images
 
@@ -86,12 +86,17 @@ void initGoalLoop(){
   // loop forever if goles aren't set
   if (NUM_GOLES == 0){
     while (true){
-      Serial.println("empty goles");
       display.clearDisplay();
-      display.println("there is an empty gole");
+      display.setTextSize(1);
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(0, 0);
+      display.println("No goles! Connect Arduino with computer and edit the source code.");
       display.display();
-      display.startscrollright(0x00, 0x0F);
-      delay(2000);  
+      display.startscrollleft(0x00, 0x0F);
+      delay(8000);  
+      display.stopscroll();
+      display.clearDisplay();
+      delay(500);
     }
   }
 
@@ -102,27 +107,50 @@ void initGoalLoop(){
     goleDone[i] = false;
 }
 
+
+// TODO: lazy update display screen
 void goalLoop(){
   
   // display the list of goles on the top 128x32, so 16 pixels for top
   int circleD = 16, space = (128-circleD*NUM_GOLES) / (NUM_GOLES+1);
   int r = circleD/2;
-  
+
+//  Serial.print("cD: ");
+//  Serial.print(circleD);
+//  Serial.print("  space: ");
+//  Serial.print(space);
+//  Serial.print("  r: ");
+//  Serial.print(r);
+//  Serial.println();
+
+  int x = r + space;
+
+  display.clearDisplay();
   for (int i=0; i<NUM_GOLES; i++){
     
     // if gole is not done, empty circle; else fill circle
-    int x = (i+1) * (r + space);
+//    Serial.print(x);
+//    Serial.print(" ");
     if (goleDone[i])
       display.fillCircle(x, r, r, WHITE);
     else display.drawCircle(x, r, r, WHITE);
     
     // if gole is currently selected, draw box around it
-    if (goleInd == i)
-      display.drawRoundRect(x-r, 0, x+r, circleD, 4, WHITE);
+    if (goleInd == i){
+      display.drawRoundRect(x-r, 0, circleD, circleD, 0, WHITE);
+    }
+
+    x += circleD + space;
   }
+
+  Serial.println();
+  
 
   
   // display current gole text
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, circleD);
   display.println(goleText[goleInd]);
   display.display();
 
@@ -167,7 +195,7 @@ static const unsigned char PROGMEM logo_bmp[] =
 
 
 void initAnimateLoop(){
-  state = Goal;
+  state = Animate;
   
   display.clearDisplay();
   display.display();
